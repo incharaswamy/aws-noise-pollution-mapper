@@ -1,0 +1,1 @@
+User → S3 → Lambda → DynamoDB → SNS → Email
