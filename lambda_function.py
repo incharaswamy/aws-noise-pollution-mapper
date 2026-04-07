@@ -18,29 +18,54 @@ def lambda_handler(event, context):
         event['Records'][0]['s3']['object']['key']
     )
 
-    fake_text = "loud construction noise"
+    # extract location + noise type from filename
+    filename = key.lower()
+    try:
+        parts = filename.split("_")
+        location = parts[0].capitalize()
+        noise_type = parts[1].split(".")[0].capitalize()
+    except:
+        location = "Unknown"
+        noise_type = "Unknown"
+
+    # cleanup location format
+    if location.startswith("area"):
+        location = "Area " + location[-1].upper()
+
+    fake_text = f"{noise_type} noise reported"
 
     item = {
         "id": str(uuid.uuid4()),
         "file": key,
         "text": fake_text,
+        "location": location,
+        "noise_type": noise_type,
         "timestamp": datetime.utcnow().isoformat()
     }
 
     table.put_item(Item=item)
 
-    # Count total reports
+    # count + collect noise types
     response = table.scan()
-    count = len(response['Items'])
+
+    count = 0
+    noise_types = set()
+
+    for item in response['Items']:
+        if item.get('location') == location:
+            count += 1
+            noise_types.add(item.get('noise_type'))
 
     print("Total reports:", count)
 
-    # If >= 3 → send alert
-    if count >= 3:
+    #  show all noise types
+    if count == 3:
+        noise_list = ", ".join(noise_types)
+
         sns.publish(
             TopicArn=TOPIC_ARN,
-            Message=f"High noise reported! Total complaints: {count}",
-            Subject="Noise Alert 🚨"
+            Message=f"High noise reported in {location}: {noise_list} ({count} reports)",
+            Subject="Noise Alert"
         )
         print("SNS alert sent!")
 
