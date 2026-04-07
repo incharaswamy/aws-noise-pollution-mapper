@@ -1,4 +1,4 @@
-# noise-pollution-mapper
+# aws-noise-pollution-mapper
 Serverless noise monitoring system using AWS
 
 # Neighbourhood Noise Pollution Mapper
