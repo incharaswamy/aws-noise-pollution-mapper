@@ -23,7 +23,7 @@ All of this runs without managing servers, using AWS services.
 
 ---
 
-## Wo
+## Wor
 
 Upload → S3 → Lambda → DynamoDB → SNS → Email Alert
 
